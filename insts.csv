@@ -160,7 +160,7 @@ hex,instr,addr,len,tim
 9E,,,,
 9F,,,,
 A0,LDY,imm,2,2
-A1,LDA,inx,2,6
+A1,LDA,imx,2,6
 A2,LDX,imm,2,2
 A3,,,,
 A4,LDY,zp,2,3
