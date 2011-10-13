@@ -18,11 +18,22 @@ class Memory(object):
     def __init__(self):
         self.memory = bytearray(self.MEMORYSIZE)
         self.protection = bytearray(self.MEMORYSIZE)
-    
+        self.maps = {}
+        
+    def map(self, range, callback):
+        self.maps[range] = callback
+        
+    def unmap(self, range):
+        del(self.maps[range])
+        
     def readByte(self, address):
         # TODO - add memory mapping
         if address < 0 or address > 0xffff:
             raise self.InvalidAddressException(address)
+        
+        mapped = [ self.maps[range] for range in self.maps if address>=range[0] and address<=range[1] ]
+        if len(mapped):
+            return mapped[0].readByte(address)
         
         return self.memory[address]
     
@@ -33,8 +44,12 @@ class Memory(object):
         
         if value < 0 or value > 0xff:
             raise self.ValueOutOfRange(value)
-        
-        self.memory[address] = value
+
+        mapped = [ self.maps[range] for range in self.maps if address>=range[0] and address<=range[1] ]
+        if len(mapped):
+            mapped[0].writeByte(address)
+        else:
+            self.memory[address] = value
         
     def readSignedByte(self, address):
         b = self.readByte(address)

@@ -5,13 +5,13 @@ Created on 12 Oct 2011
 '''
 
 import Disassembler
-import ROMs.BBCMicro as BBC
+import ROMs.TestData as TestData
 
 DecoderTablePath = "insts.csv"
 
 def main():
     disassembler = Disassembler.Disassembler(DecoderTablePath)
-    disassembler.disassemble(BBC.rom_os12)
+    disassembler.disassemble(TestData.testROM1)
     
     
 if __name__ == '__main__':

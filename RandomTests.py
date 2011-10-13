@@ -12,16 +12,16 @@ import CPU.InstructionDecoder as Decoder
 
 DecodeFilename = "insts.csv"
 
+
 class Test(unittest.TestCase):
 
     def testName(self):
         mem = Memory.Memory()
+        mem.map()
         reg = Registers.RegisterBank()
         addrDispatch = AddressDispatcher.AddressDispatcher(reg, mem)
         decoder = Decoder.Decoder(DecodeFilename)
         dispatch = Dispatch.Dispatcher(decoder, addrDispatch, None)
-        
-
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
