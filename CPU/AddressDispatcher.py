@@ -1,6 +1,6 @@
 
 class AddressDispatcher(object):
-    def __init__(self, registerBank, memory):
+    def __init__(self, memory, registerBank):
         self.registers = registerBank
         self.memory = memory
     

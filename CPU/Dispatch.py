@@ -90,7 +90,7 @@ class Dispatcher:
         opcode = self.memory.readByte(self.registers.pc)
         instruction = self.decoder.instruction(opcode)
         data = self.addressDecode(opcode)
-        self.executionTable[instruction](data)
+        result = self.executionTable[instruction](data)
         self.registers.pc += self.decoder.instructionLength(opcode)
-        
+        return result
         
