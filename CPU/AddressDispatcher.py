@@ -18,8 +18,8 @@ class AddressDispatcher(object):
     
     def zeroPageX(self):
         offset = self.memory.readByte( self.registers.pc + 1)
-        addr = (self.registers.x + offset) & 0xff
-        return addr
+        addr = offset + self.registers.x
+        return addr & 0xff
     
     def zeroPageY(self):
         offset = self.memory.readByte( self.registers.pc + 1)
@@ -43,7 +43,7 @@ class AddressDispatcher(object):
         
     def indirect(self):
         addr = self.memory.readWord(self.registers.pc + 1)
-        return addr
+        return self.memory.readWord(addr)
     
     def indirectX(self):
         addr = self.memory.readByte(self.registers.pc + 1) + self.registers.x
@@ -73,7 +73,7 @@ class AddressDispatcher(object):
         return self.memory.readByte(self.zeroPageY())
     
     def relativeRead(self):
-        return self.relative() # hack hack hack
+        return self.memory.readByte(self.relative()) # hack hack hack
     
     def absoluteRead(self):
         return self.memory.readByte(self.absolute())
@@ -85,7 +85,7 @@ class AddressDispatcher(object):
         return self.memory.readByte(self.absoluteY())
         
     def indirectRead(self):
-        return self.memory.readWord(self.indirect())
+        return self.memory.readByte(self.indirect())
     
     def indirectXRead(self):
         return self.memory.readByte(self.indirectX())

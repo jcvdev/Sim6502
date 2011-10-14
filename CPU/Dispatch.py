@@ -123,8 +123,8 @@ class Dispatcher:
         
         #execute
         data = self.dataDecode(opcode)
-        result = self.executionTable[instruction](data)
         address = self.addressDecode(opcode)
+        result = self.executionTable[instruction](data, address)
         
         if result != None:
             self.writebackTable[writeback](result, address)

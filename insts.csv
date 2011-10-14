@@ -1,5 +1,5 @@
 hex,instr,addr,wb,len,tim
-00,BRK,imp,NW,1,7
+00,BRK,imp,PC,1,7
 01,ORA,inx,A,2,6
 02,,,,,
 03,,,,,

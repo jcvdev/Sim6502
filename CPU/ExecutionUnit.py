@@ -4,195 +4,256 @@ Created on 13 Oct 2011
 @author: chris.whitworth
 '''
 
+class StackOverflowException(BaseException):
+    pass
+class StackUnderflowException(BaseException):
+    pass
+
 class ExecutionDispatcher(object):
+    class NotImplementedException(BaseException):
+        def __init__(self):
+            self.instr = ""
+            
+        def __repr__(self):
+            "%s is not implemented"
+            
     def __init__(self, memory, registers):
         self.memory = memory
         self.registers = registers
     
-    def ADC(self, data):
+    def pushByte(self, value):
+        self.memory.writeByte(self.registers.sp, value)
+        self.registers.sp -= 1
+        if self.registers.sp < 0x0100:
+            raise StackOverflowException()
+        
+    def pullByte(self):
+        self.registers.sp += 1
+        if self.registers.sp > 0x01ff:
+            raise StackUnderflowException()
+        
+        return self.memory.readByte(self.registers.sp)
+    
+    def pushWord(self, value):
+        self.pushByte( value >> 8)
+        self.pushByte( value & 0xff )
+
+    def pullWord(self):
+        lw = self.pullByte()
+        hw = self.pullByte() << 8
+        return lw + hw
+    
+    def ADC(self, data, address):
         result = self.registers.a + data + 1 if self.registers.carry else 0
         self.registers.negative = (result & 0x80) != 0 
         self.registers.carry = (result > 255)
         self.registers.zero = (result == 0)
         return result & 0xff
 
-    def AND(self, data):
+    def AND(self, data, address):
         result = self.registers.a & data
         self.registers.zero = (result == 0)
         self.registers.negative = (result & 0x80) != 0
         return result
 
-    def ASL(self, data):
+    def ASL(self, data, address):
         result = data << 1
         self.registers.carry = (result > 255)
         self.registers.zero = (result == 0)
         self.registers.negative = (result & 0x80) != 0
         return result & 0xff
 
-    def BCC(self, data):
+    def BCC(self, data, address):
         if not self.registers.carry:
-            return data
+            return address
         else:
             return None
 
-    def BCS(self, data):
+    def BCS(self, data, address):
         if self.registers.carry:
-            return data
+            return address
         else:
             return None
 
-    def BEQ(self, data):
-        pass
+    def BEQ(self, data, address):
+        if self.registers.zero:
+            return address
+        else:
+            return None
 
-    def BIT(self, data):
-        pass
+    def BIT(self, data, address):
+        result = self.registers.a & data
+        self.registers.negative = (result & 0x80) != 0
+        self.registers.overflow = (result & 0x40) != 0
+        self.registers.zero = (result == 0)
+        return None
 
-    def BMI(self, data):
-        pass
+    def BMI(self, data, address):
+        raise self.NotImplementedException()
 
-    def BNE(self, data):
-        pass
+    def BNE(self, data, address):
+        raise self.NotImplementedException()
 
-    def BPL(self, data):
-        pass
+    def BPL(self, data, address):
+        raise self.NotImplementedException()
 
-    def BRK(self, data):
-        pass
+    def BRK(self, data, address):
+        self.pushWord(self.registers.pc + 2)
+        self.pushByte(self.registers.ps())
+        self.registers.brk = True
+        return self.memory.readWord(0xfffe)
+        
+    def BVC(self, data, address):
+        raise self.NotImplementedException()
 
-    def BVC(self, data):
-        pass
+    def BVS(self, data, address):
+        raise self.NotImplementedException()
 
-    def BVS(self, data):
-        pass
+    def CLC(self, data, address):
+        self.registers.carry = False
+        return None
 
-    def CLC(self, data):
-        pass
+    def CLD(self, data, address):
+        raise self.NotImplementedException()
 
-    def CLD(self, data):
-        pass
+    def CLI(self, data, address):
+        raise self.NotImplementedException()
 
-    def CLI(self, data):
-        pass
+    def CLV(self, data, address):
+        raise self.NotImplementedException()
 
-    def CLV(self, data):
-        pass
+    def CMP(self, data, address):
+        raise self.NotImplementedException()
 
-    def CMP(self, data):
-        pass
+    def CPX(self, data, address):
+        raise self.NotImplementedException()
 
-    def CPX(self, data):
-        pass
+    def CPY(self, data, address):
+        raise self.NotImplementedException()
 
-    def CPY(self, data):
-        pass
+    def DEC(self, data, address):
+        result = data - 1
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result & 0xff
 
-    def DEC(self, data):
-        pass
+    def DEX(self, data, address):
+        result = self.registers.x - 1
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result & 0xff
 
-    def DEX(self, data):
-        pass
+    def DEY(self, data, address):
+        result = self.registers.y - 1
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result & 0xff
 
-    def DEY(self, data):
-        pass
+    def EOR(self, data, address):
+        result = self.registers.a ^ data
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result
 
-    def EOR(self, data):
-        pass
+    def INC(self, data, address):
+        raise self.NotImplementedException()
 
-    def INC(self, data):
-        pass
+    def INX(self, data, address):
+        raise self.NotImplementedException()
 
-    def INX(self, data):
-        pass
+    def INY(self, data, address):
+        raise self.NotImplementedException()
 
-    def INY(self, data):
-        pass
+    def JMP(self, data, address):
+        return address
 
-    def JMP(self, data):
+    def JSR(self, data, address):
+        self.pushWord(self.registers.pc + 2)
+        return address
+
+    def LDA(self, data, address):
         return data
 
-    def JSR(self, data):
-        pass
+    def LDX(self, data, address):
+        raise self.NotImplementedException()
 
-    def LDA(self, data):
+    def LDY(self, data, address):
+        raise self.NotImplementedException()
+
+    def LSR(self, data, address):
+        raise self.NotImplementedException()
+
+    def NOP(self, data, address):
+        raise self.NotImplementedException()
+
+    def ORA(self, data, address):
+        raise self.NotImplementedException()
+
+    def PHA(self, data, address):
+        self.pushByte(self.registers.a)
+        return None
+
+    def PHP(self, data, address):
+        self.pushByte(self.registers.ps())
+        return None
+
+    def PLA(self, data, address):
+        raise self.NotImplementedException()
+
+    def PLP(self, data, address):
+        raise self.NotImplementedException()
+
+    def ROL(self, data, address):
+        raise self.NotImplementedException()
+
+    def ROR(self, data, address):
+        raise self.NotImplementedException()
+
+    def RTI(self, data, address):
+        raise self.NotImplementedException()
+
+    def RTS(self, data, address):
+        location = self.pullWord()
+        return location + 1
+
+    def SBC(self, data, address):
+        raise self.NotImplementedException()
+
+    def SEC(self, data, address):
+        raise self.NotImplementedException()
+
+    def SED(self, data, address):
+        raise self.NotImplementedException()
+
+    def SEI(self, data, address):
+        raise self.NotImplementedException()
+
+    def STA(self, data, address):
         return data
 
-    def LDX(self, data):
-        pass
+    def STX(self, data, address):
+        raise self.NotImplementedException()
 
-    def LDY(self, data):
-        pass
+    def STY(self, data, address):
+        raise self.NotImplementedException()
 
-    def LSR(self, data):
-        pass
+    def TAX(self, data, address):
+        raise self.NotImplementedException()
 
-    def NOP(self, data):
-        pass
+    def TAY(self, data, address):
+        raise self.NotImplementedException()
 
-    def ORA(self, data):
-        pass
+    def TSX(self, data, address):
+        return self.registers.sp
 
-    def PHA(self, data):
-        pass
+    def TXA(self, data, address):
+        return self.registers.x
 
-    def PHP(self, data):
-        pass
+    def TXS(self, data, address):
+        raise self.NotImplementedException()
 
-    def PLA(self, data):
-        pass
+    def TYA(self, data, address):
+        return self.registers.y
 
-    def PLP(self, data):
-        pass
-
-    def ROL(self, data):
-        pass
-
-    def ROR(self, data):
-        pass
-
-    def RTI(self, data):
-        pass
-
-    def RTS(self, data):
-        pass
-
-    def SBC(self, data):
-        pass
-
-    def SEC(self, data):
-        pass
-
-    def SED(self, data):
-        pass
-
-    def SEI(self, data):
-        pass
-
-    def STA(self, data):
-        pass
-
-    def STX(self, data):
-        pass
-
-    def STY(self, data):
-        pass
-
-    def TAX(self, data):
-        pass
-
-    def TAY(self, data):
-        pass
-
-    def TSX(self, data):
-        pass
-
-    def TXA(self, data):
-        pass
-
-    def TXS(self, data):
-        pass
-
-    def TYA(self, data):
-        pass
-
-    def UNDEFINED(self, data):
-        pass
+    def UNDEFINED(self, data, address):
+        raise self.NotImplementedException()

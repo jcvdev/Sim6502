@@ -47,9 +47,11 @@ class Memory(object):
         if value < 0 or value > 0xff:
             raise self.ValueOutOfRange(value)
 
-        mapped = [ self.maps[range] for range in self.maps if address>=range[0] and address<=range[1] ]
+        mapped = [ (range[0], self.maps[range]) for range in self.maps if address>=range[0] and address<range[1] ]
         if len(mapped):
-            mapped[0].writeByte(address)
+            base = mapped[0][0]
+            mappedDevice = mapped[0][1]
+            mappedDevice.writeByte(address - base, value)
         else:
             self.memory[address] = value
         

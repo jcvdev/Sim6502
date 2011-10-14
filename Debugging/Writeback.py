@@ -15,7 +15,7 @@ class LoggingDispatcher(object):
         print "Saving %s to Y" % value
         
     def memory(self, value, location):
-        print "Saving %s to $%s" (value, hex(location))
+        print "Saving %s to $%s" % (value, hex(location))
         
     def PC(self, value, location):
         print "Saving %s to the PC" % value
