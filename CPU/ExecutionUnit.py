@@ -10,19 +10,36 @@ class ExecutionDispatcher(object):
         self.registers = registers
     
     def ADC(self, data):
-        pass
+        result = self.registers.a + data + 1 if self.registers.carry else 0
+        self.registers.negative = (result & 0x80) != 0 
+        self.registers.carry = (result > 255)
+        self.registers.zero = (result == 0)
+        return result & 0xff
 
     def AND(self, data):
-        pass
+        result = self.registers.a & data
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result
 
     def ASL(self, data):
-        pass
+        result = data << 1
+        self.registers.carry = (result > 255)
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result & 0xff
 
     def BCC(self, data):
-        pass
+        if not self.registers.carry:
+            return data
+        else:
+            return None
 
     def BCS(self, data):
-        pass
+        if self.registers.carry:
+            return data
+        else:
+            return None
 
     def BEQ(self, data):
         pass
@@ -91,13 +108,13 @@ class ExecutionDispatcher(object):
         pass
 
     def JMP(self, data):
-        pass
+        return data
 
     def JSR(self, data):
         pass
 
     def LDA(self, data):
-        pass
+        return data
 
     def LDX(self, data):
         pass
@@ -177,4 +194,5 @@ class ExecutionDispatcher(object):
     def TYA(self, data):
         pass
 
-
+    def UNDEFINED(self, data):
+        pass

@@ -6,12 +6,12 @@ class Decoder(object):
     def loadDecodeTable(self, decodeFile):
         self.decodeTable = {}
         for entry in decodeFile:
-            (opcode, instr, addr, byteLen, time) = entry.split(",")
+            (opcode, instr, addr, wb, byteLen, time) = entry.split(",")
             try:
                 if instr != "":
-                    self.decodeTable[int(opcode,16)] = (instr, addr, int(byteLen), int(time))
+                    self.decodeTable[int(opcode,16)] = (instr, addr, wb, int(byteLen), int(time))
                 else:
-                    self.decodeTable[int(opcode,16)] = ("UNDEFINED", "imp", 1, 1)
+                    self.decodeTable[int(opcode,16)] = ("UNDEFINED", "imp", "NW", 1, 1)
             except ValueError:
                 pass
             
@@ -21,9 +21,12 @@ class Decoder(object):
     def addressingMode(self, opcode):
         return self.decodeTable[opcode][1]
     
-    def instructionLength(self, opcode):
+    def writeback(self, opcode):
         return self.decodeTable[opcode][2]
+    
+    def instructionLength(self, opcode):
+        return self.decodeTable[opcode][3]
     
     def clockCycles(self, opcode):
         ''' This will, in general, be wrong '''
-        return self.decodeTable[opcode][3] 
+        return self.decodeTable[opcode][4] 

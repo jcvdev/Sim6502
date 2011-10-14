@@ -31,9 +31,11 @@ class Memory(object):
         if address < 0 or address > 0xffff:
             raise self.InvalidAddressException(address)
         
-        mapped = [ self.maps[range] for range in self.maps if address>=range[0] and address<=range[1] ]
+        mapped = [ (range[0], self.maps[range]) for range in self.maps if address>=range[0] and address<=range[1] ]
         if len(mapped):
-            return mapped[0].readByte(address)
+            base = mapped[0][0]
+            mappedDevice = mapped[0][1]
+            return mappedDevice.readByte(address - base)
         
         return self.memory[address]
     
@@ -56,4 +58,4 @@ class Memory(object):
         return unpack("b", chr(b))[0]
     
     def readWord(self, address):
-        return self.readByte(address) + self.readByte(address + 1) << 8
+        return self.readByte(address) + (self.readByte(address + 1) << 8)

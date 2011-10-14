@@ -5,11 +5,11 @@ Created on 12 Oct 2011
 '''
 
 class Dispatcher:
-    def __init__(self, decoder, addressDispatcher, executionDispatcher, memory, registers):
+    def __init__(self, decoder, addressDispatcher, executionDispatcher, writebackDispatcher, memory, registers):
         self.decoder = decoder
         self.memory = memory
         self.registers = registers
-        self.addressingTable = { "imp": addressDispatcher.implicit,
+        self.addressTable = { "imp": addressDispatcher.implicit,
                                  "acc": addressDispatcher.accumulator,
                                  "imm": addressDispatcher.immediate,
                                  "zp" : addressDispatcher.zeroPage,
@@ -22,6 +22,20 @@ class Dispatcher:
                                  "ind": addressDispatcher.indirect,
                                  "inx": addressDispatcher.indirectX,
                                  "iny": addressDispatcher.indirectY
+                               }
+        self.dataTable = { "imp": addressDispatcher.implicitRead,
+                                 "acc": addressDispatcher.accumulatorRead,
+                                 "imm": addressDispatcher.immediateRead,
+                                 "zp" : addressDispatcher.zeroPageRead,
+                                 "zpx": addressDispatcher.zeroPageXRead,
+                                 "zpy": addressDispatcher.zeroPageYRead,
+                                 "rel": addressDispatcher.relativeRead,
+                                 "abs": addressDispatcher.absoluteRead,
+                                 "abx": addressDispatcher.absoluteXRead,
+                                 "aby": addressDispatcher.absoluteYRead,
+                                 "ind": addressDispatcher.indirectRead,
+                                 "inx": addressDispatcher.indirectXRead,
+                                 "iny": addressDispatcher.indirectYRead
                                }
         
         self.executionTable = { "ADC" : executionDispatcher.ADC,
@@ -79,18 +93,43 @@ class Dispatcher:
                                 "TSX" : executionDispatcher.TSX,
                                 "TXA" : executionDispatcher.TXA,
                                 "TXS" : executionDispatcher.TXS,
-                                "TYA" : executionDispatcher.TYA
+                                "TYA" : executionDispatcher.TYA,
+                                "UNDEFINED" : executionDispatcher.UNDEFINED
+                                }
+        self.writebackTable = { "A" : writebackDispatcher.A,
+                                "X" : writebackDispatcher.X,
+                                "Y" : writebackDispatcher.Y,
+                                "M" : writebackDispatcher.memory,
+                                "PC" : writebackDispatcher.PC,
+                                "SP" : writebackDispatcher.SP,
+                                "PS" : writebackDispatcher.PS,
+                                "NW" : writebackDispatcher.NW
                                 }
     
+    def dataDecode(self, opcode):
+        addressingMode = self.decoder.addressingMode(opcode)
+        return self.dataTable[addressingMode]()
+
     def addressDecode(self, opcode):
         addressingMode = self.decoder.addressingMode(opcode)
-        return self.addressingTable[addressingMode]()
+        return self.addressTable[addressingMode]()
     
     def dispatch(self):
+        #Decode
         opcode = self.memory.readByte(self.registers.pc)
         instruction = self.decoder.instruction(opcode)
-        data = self.addressDecode(opcode)
+        writeback = self.decoder.writeback(opcode)
+        self.registers.nextPC = self.registers.pc + self.decoder.instructionLength(opcode)
+        
+        #execute
+        data = self.dataDecode(opcode)
         result = self.executionTable[instruction](data)
-        self.registers.pc += self.decoder.instructionLength(opcode)
+        address = self.addressDecode(opcode)
+        
+        if result != None:
+            self.writebackTable[writeback](result, address)
+            
+        self.registers.pc = self.registers.nextPC
+        
         return result
         

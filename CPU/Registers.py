@@ -11,6 +11,7 @@ class RegisterBank(object):
         self.a  = 0x00
         self.x  = 0x00
         self.y  = 0x00
+        self.nextPC = 0x0000
         
         self.carry = False
         self.zero = False
@@ -28,3 +29,9 @@ class RegisterBank(object):
                  (16 if self.brk else 0) |
                  (32 if self.overflow else 0) |
                  (64 if self.negative else 0) )
+        
+    def status(self):
+        print "A = %s X = %s Y = %s" % (hex(self.a), hex(self.x), hex(self.y))
+        print "PC = %s SP = %s" % (hex(self.pc), hex(self.sp))
+        print "C = %s Z = %s I = %s D = %s" % (self.carry, self.zero, self.int, self.dec)
+        print "B = %s V = %s N = %s" % (self.brk, self.overflow, self.negative)

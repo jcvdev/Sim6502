@@ -14,181 +14,210 @@ import logging
 
 class ExecutionUnit(object):
     def ADC(self, data):
-        return "ADC %s" % data
+        return "ADC %s" % hex(data)
 
     def AND(self, data):
-        return "AND %s" % data
+        return "AND %s" % hex(data)
 
     def ASL(self, data):
-        return "ASL %s" % data
+        return "ASL %s" % hex(data)
 
     def BCC(self, data):
-        return "BCC %s" % data
+        return "BCC %s" % hex(data)
 
     def BCS(self, data):
-        return "BCS %s" % data
+        return "BCS %s" % hex(data)
 
     def BEQ(self, data):
-        return "BEQ %s" % data
+        return "BEQ %s" % hex(data)
 
     def BIT(self, data):
-        return "BIT %s" % data
+        return "BIT %s" % hex(data)
 
     def BMI(self, data):
-        return "BMI %s" % data
+        return "BMI %s" % hex(data)
 
     def BNE(self, data):
-        return "BNE %s" % data
+        return "BNE %s" % hex(data)
 
     def BPL(self, data):
-        return "BPL %s" % data
+        return "BPL %s" % hex(data)
 
     def BRK(self, data):
-        return "BRK %s" % data
+        return "BRK"
 
     def BVC(self, data):
-        return "BVC %s" % data
+        return "BVC %s" % hex(data)
 
     def BVS(self, data):
-        return "BVS %s" % data
+        return "BVS %s" % hex(data)
 
     def CLC(self, data):
-        return "CLC %s" % data
+        return "CLC"
 
     def CLD(self, data):
-        return "CLD %s" % data
+        return "CLD"
 
     def CLI(self, data):
-        return "CLI %s" % data
+        return "CLI"
 
     def CLV(self, data):
-        return "CLV %s" % data
+        return "CLV"
 
     def CMP(self, data):
-        return "CMP %s" % data
+        return "CMP %s" % hex(data)
 
     def CPX(self, data):
-        return "CPX %s" % data
+        return "CPX %s" % hex(data)
 
     def CPY(self, data):
-        return "CPY %s" % data
+        return "CPY %s" % hex(data)
 
     def DEC(self, data):
-        return "DEC %s" % data
+        return "DEC %s" % hex(data)
 
     def DEX(self, data):
-        return "DEX %s" % data
+        return "DEX"
 
     def DEY(self, data):
-        return "DEY %s" % data
+        return "DEY"
 
     def EOR(self, data):
-        return "EOR %s" % data
+        return "EOR %s" % hex(data)
 
     def INC(self, data):
-        return "INC %s" % data
+        return "INC %s" % hex(data)
 
     def INX(self, data):
-        return "INX %s" % data
+        return "INX"
 
     def INY(self, data):
-        return "INY %s" % data
+        return "INY"
 
     def JMP(self, data):
-        return "JMP %s" % data
+        return "JMP %s" % hex(data)
 
     def JSR(self, data):
-        return "JSR %s" % data
+        return "JSR %s" % hex(data)
 
     def LDA(self, data):
-        return "LDA %s" % data
+        return "LDA %s" % hex(data)
 
     def LDX(self, data):
-        return "LDX %s" % data
+        return "LDX %s" % hex(data)
 
     def LDY(self, data):
-        return "LDY %s" % data
+        return "LDY %s" % hex(data)
 
     def LSR(self, data):
-        return "LSR %s" % data
+        return "LSR %s" % hex(data)
 
     def NOP(self, data):
-        return "NOP %s" % data
+        return "NOP"
 
     def ORA(self, data):
-        return "ORA %s" % data
+        return "ORA %s" % hex(data)
 
     def PHA(self, data):
-        return "PHA %s" % data
+        return "PHA"
 
     def PHP(self, data):
-        return "PHP %s" % data
+        return "PHP"
 
     def PLA(self, data):
-        return "PLA %s" % data
+        return "PLA"
 
     def PLP(self, data):
-        return "PLP %s" % data
+        return "PLP"
 
     def ROL(self, data):
-        return "ROL %s" % data
+        return "ROL %s" % hex(data)
 
     def ROR(self, data):
-        return "ROR %s" % data
+        return "ROR %s" % hex(data)
 
     def RTI(self, data):
-        return "RTI %s" % data
+        return "RTI"
 
     def RTS(self, data):
-        return "RTS %s" % data
+        return "RTS"
 
     def SBC(self, data):
-        return "SBC %s" % data
+        return "SBC %s" % hex(data)
 
     def SEC(self, data):
-        return "SEC %s" % data
+        return "SEC"
 
     def SED(self, data):
-        return "SED %s" % data
+        return "SED"
 
     def SEI(self, data):
-        return "SEI %s" % data
+        return "SEI"
 
     def STA(self, data):
-        return "STA %s" % data
+        return "STA %s" % hex(data)
 
     def STX(self, data):
-        return "STX %s" % data
+        return "STX %s" % hex(data)
 
     def STY(self, data):
-        return "STY %s" % data
+        return "STY %s" % hex(data)
 
     def TAX(self, data):
-        return "TAX %s" % data
+        return "TAX"
 
     def TAY(self, data):
-        return "TAY %s" % data
+        return "TAY"
 
     def TSX(self, data):
-        return "TSX %s" % data
+        return "TSX"
 
     def TXA(self, data):
-        return "TXA %s" % data
+        return "TXA"
 
     def TXS(self, data):
-        return "TXS %s" % data
+        return "TXS"
 
     def TYA(self, data):
-        return "TYA %s" % data
+        return "TYA"
 
+    def UNDEFINED(self, data):
+        return "UNDEFINED"
+
+class WritebackDispatcher(object):
+    def A(self, value, location):
+        pass
+        
+    def X(self, value, location):
+        pass
+        
+    def Y(self, value, location):
+        pass
+        
+    def memory(self, value, location):
+        pass
+        
+    def PC(self, value, location):
+        pass
+        
+    def SP(self, value, location):
+        pass
+        
+    def PS(self, value, location):
+        pass
+    
+    def NW(self, value, location):
+        pass
+            
 class Disassembler(object):
     def __init__(self, decoderTablePath):
-        self.executionDispatcher = ExecutionUnit()
+        executionDispatcher = ExecutionUnit()
         self.memory = Memory.Memory()
         self.registers = Registers.RegisterBank()
-        self.addressDispatcher = AddressDispatch.AddressDispatcher(self.memory, self.registers)
-        self.decoder = Decoder.Decoder(decoderTablePath)
-        self.dispatch = Dispatch.Dispatcher(self.decoder, self.addressDispatcher, self.executionDispatcher, self.memory, self.registers)
+        addressDispatcher = AddressDispatch.AddressDispatcher(self.memory, self.registers)
+        writebackDispatcher = WritebackDispatcher()
+        decoder = Decoder.Decoder(decoderTablePath)
+        self.dispatch = Dispatch.Dispatcher(decoder, addressDispatcher, executionDispatcher, writebackDispatcher, self.memory, self.registers)
 
     class Generator(object):
         def __init__(self, dispatcher):
@@ -205,5 +234,6 @@ class Disassembler(object):
         self.memory.map( (0, len(data)), ArrayMemMapper.Mapper(data))
         generator = self.Generator(self.dispatch)
         for decode in generator:
-            print decode
+            print "%s " % (self.registers.pc),
+            print ": %s " % (decode)
         
