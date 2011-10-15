@@ -30,6 +30,15 @@ class RegisterBank(object):
                  (32 if self.overflow else 0) |
                  (64 if self.negative else 0) )
         
+    def setPS(self, value):
+        self.carry = (value & 0x1) != 0
+        self.zero = (value & 0x2) != 0
+        self.int = (value & 0x4) != 0
+        self.dec = (value & 0x8) != 0
+        self.brk = (value & 0x10) != 0
+        self.overflow = (value & 0x20) != 0
+        self.negative = (value & 0x40) != 0
+        
     def status(self):
         print "A = %s X = %s Y = %s" % (hex(self.a), hex(self.x), hex(self.y))
         print "PC = %s SP = %s" % (hex(self.pc), hex(self.sp))

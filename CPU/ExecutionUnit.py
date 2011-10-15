@@ -172,13 +172,19 @@ class ExecutionDispatcher(object):
         return address
 
     def LDA(self, data, address):
+        self.registers.zero = (data == 0)
+        self.registers.negative = (data & 0x80) != 0
         return data
 
     def LDX(self, data, address):
-        raise self.NotImplementedException()
+        self.registers.zero = (data == 0)
+        self.registers.negative = (data & 0x80) != 0
+        return data
 
     def LDY(self, data, address):
-        raise self.NotImplementedException()
+        self.registers.zero = (data == 0)
+        self.registers.negative = (data & 0x80) != 0
+        return data
 
     def LSR(self, data, address):
         raise self.NotImplementedException()
@@ -198,7 +204,10 @@ class ExecutionDispatcher(object):
         return None
 
     def PLA(self, data, address):
-        raise self.NotImplementedException()
+        result = self.pullByte()
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result
 
     def PLP(self, data, address):
         raise self.NotImplementedException()
@@ -210,7 +219,10 @@ class ExecutionDispatcher(object):
         raise self.NotImplementedException()
 
     def RTI(self, data, address):
-        raise self.NotImplementedException()
+        self.registers.setPS(self.pullByte())
+        self.registers.brk = False
+        return self.pullWord()
+        
 
     def RTS(self, data, address):
         location = self.pullWord()
@@ -238,22 +250,40 @@ class ExecutionDispatcher(object):
         raise self.NotImplementedException()
 
     def TAX(self, data, address):
-        raise self.NotImplementedException()
+        result = self.registers.a
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result
 
     def TAY(self, data, address):
-        raise self.NotImplementedException()
+        result = self.registers.a
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result
 
     def TSX(self, data, address):
-        return self.registers.sp
+        result = self.registers.sp
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result
 
     def TXA(self, data, address):
-        return self.registers.x
+        result = self.registers.x
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result
 
     def TXS(self, data, address):
-        raise self.NotImplementedException()
+        result = self.registers.x
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result
 
     def TYA(self, data, address):
-        return self.registers.y
+        result = self.registers.y
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result
 
     def UNDEFINED(self, data, address):
         raise self.NotImplementedException()
