@@ -65,8 +65,8 @@ class ExecutionDispatcher(object):
     def ASL(self, data, address):
         result = data << 1
         self.registers.carry = (result > 255)
-        self.registers.zero = (result == 0)
-        self.registers.negative = (result & 0x80) != 0
+        #self.registers.zero = (result == 0)
+        #self.registers.negative = (result & 0x80) != 0
         return result & 0xff
 
     def BCC(self, data, address):
@@ -225,8 +225,8 @@ class ExecutionDispatcher(object):
     def LSR(self, data, address):
         self.registers.carry = (data & 0x01) != 0
         result = data >> 1
-        self.registers.zero = (result == 0)
-        self.registers.negative = (result & 0x80) != 0
+        #self.registers.zero = (result == 0)
+        #self.registers.negative = (result & 0x80) != 0
         return result & 0xff
 
     def NOP(self, data, address):
@@ -350,4 +350,3 @@ class ExecutionDispatcher(object):
 
     def UNDEFINED(self, data, address):
         pass
-        raise self.NotImplementedException()
