@@ -132,4 +132,7 @@ class Dispatcher:
         self.registers.pc = self.registers.nextPC
         
         return result
-        
+
+    def reset(self):
+        self.registers.reset()
+        self.registers.pc = self.memory.readWord(0xfffc)

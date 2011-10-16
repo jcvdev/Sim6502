@@ -22,17 +22,17 @@ class ExecutionDispatcher(object):
         self.registers = registers
     
     def pushByte(self, value):
-        self.memory.writeByte(self.registers.sp, value)
+        self.memory.writeByte(self.registers.sp + 0x100, value)
         self.registers.sp -= 1
-        if self.registers.sp < 0x0100:
+        if self.registers.sp < 0x00:
             raise StackOverflowException()
         
     def pullByte(self):
         self.registers.sp += 1
-        if self.registers.sp > 0x01ff:
+        if self.registers.sp > 0xff:
             raise StackUnderflowException()
         
-        return self.memory.readByte(self.registers.sp)
+        return self.memory.readByte(self.registers.sp + 0x100)
     
     def pushWord(self, value):
         self.pushByte( value >> 8)
@@ -43,8 +43,14 @@ class ExecutionDispatcher(object):
         hw = self.pullByte() << 8
         return lw + hw
     
+    def doCompare(self, mem, reg):
+        result = reg - mem
+        self.registers.negative = (result < 0 or result > 127)
+        self.registers.zero = (result == 0)
+        self.registers.carry = (result >= 0)
+    
     def ADC(self, data, address):
-        result = self.registers.a + data + 1 if self.registers.carry else 0
+        result = self.registers.a + data + (1 if self.registers.carry else 0)
         self.registers.negative = (result & 0x80) != 0 
         self.registers.carry = (result > 255)
         self.registers.zero = (result == 0)
@@ -89,47 +95,68 @@ class ExecutionDispatcher(object):
         return None
 
     def BMI(self, data, address):
-        raise self.NotImplementedException()
+        if self.registers.negative:
+            return address
+        else:
+            return None
 
     def BNE(self, data, address):
-        raise self.NotImplementedException()
+        if not self.registers.zero:
+            return address
+        else:
+            return None
 
     def BPL(self, data, address):
-        raise self.NotImplementedException()
+        if not self.registers.negative:
+            return address
+        else:
+            return None
 
     def BRK(self, data, address):
-        self.pushWord(self.registers.pc + 2)
+        self.pushWord(self.registers.pc + 1)
         self.pushByte(self.registers.ps())
         self.registers.brk = True
         return self.memory.readWord(0xfffe)
         
     def BVC(self, data, address):
-        raise self.NotImplementedException()
+        if not self.registers.overflow:
+            return address
+        else:
+            return None
 
     def BVS(self, data, address):
-        raise self.NotImplementedException()
+        if self.registers.overflow:
+            return address
+        else:
+            return None
 
     def CLC(self, data, address):
         self.registers.carry = False
         return None
 
     def CLD(self, data, address):
-        raise self.NotImplementedException()
+        self.registers.dec = False
+        return None
 
     def CLI(self, data, address):
-        raise self.NotImplementedException()
+        self.registers.int = False
+        return None
 
     def CLV(self, data, address):
-        raise self.NotImplementedException()
+        self.registers.overflow = False
+        return None
 
     def CMP(self, data, address):
-        raise self.NotImplementedException()
+        self.doCompare(data, self.registers.a)
+        return None
 
     def CPX(self, data, address):
-        raise self.NotImplementedException()
+        self.doCompare(data, self.registers.x)
+        return None
 
     def CPY(self, data, address):
-        raise self.NotImplementedException()
+        self.doCompare(data, self.registers.y)
+        return None
 
     def DEC(self, data, address):
         result = data - 1
@@ -156,13 +183,22 @@ class ExecutionDispatcher(object):
         return result
 
     def INC(self, data, address):
-        raise self.NotImplementedException()
+        result = (data + 1) & 0xff
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result
 
     def INX(self, data, address):
-        raise self.NotImplementedException()
+        result = (self.registers.x + 1) & 0xff
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result
 
     def INY(self, data, address):
-        raise self.NotImplementedException()
+        result = (self.registers.y + 1) & 0xff
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result
 
     def JMP(self, data, address):
         return address
@@ -187,13 +223,20 @@ class ExecutionDispatcher(object):
         return data
 
     def LSR(self, data, address):
-        raise self.NotImplementedException()
+        self.registers.carry = (data & 0x01) != 0
+        result = data >> 1
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result & 0xff
 
     def NOP(self, data, address):
         raise self.NotImplementedException()
 
     def ORA(self, data, address):
-        raise self.NotImplementedException()
+        result = data | self.registers.a
+        self.registers.zero = (data == 0)
+        self.registers.negative = (data & 0x80) != 0
+        return data
 
     def PHA(self, data, address):
         self.pushByte(self.registers.a)
@@ -210,13 +253,25 @@ class ExecutionDispatcher(object):
         return result
 
     def PLP(self, data, address):
-        raise self.NotImplementedException()
+        result = self.pullByte()
+        self.registers.setPS(result)
 
     def ROL(self, data, address):
-        raise self.NotImplementedException()
+        oldCarry = 0x01 if self.registers.carry else 0x00
+        self.registers.carry = (data & 0x80) != 0
+        result = (data << 1) & 0xff
+        result = result | oldCarry
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result
 
     def ROR(self, data, address):
-        raise self.NotImplementedException()
+        oldCarry = 0x80 if self.registers.carry else 0x00
+        self.registers.carry = (data & 0x01) != 0
+        result = (data >> 1) | (oldCarry)
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result
 
     def RTI(self, data, address):
         self.registers.setPS(self.pullByte())
@@ -229,25 +284,33 @@ class ExecutionDispatcher(object):
         return location + 1
 
     def SBC(self, data, address):
-        raise self.NotImplementedException()
+        result = (~data) & 0xff
+        result += self.registers.a + (1 if self.registers.carry else 0)
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        self.registers.carry = (result > 255)
+        return result & 0xff
 
     def SEC(self, data, address):
-        raise self.NotImplementedException()
+        self.registers.carry = True
+        return None
 
     def SED(self, data, address):
-        raise self.NotImplementedException()
+        self.register.dec = True
+        return None
 
     def SEI(self, data, address):
-        raise self.NotImplementedException()
+        self.registers.int = True
+        return None
 
     def STA(self, data, address):
-        return data
+        return self.registers.a
 
     def STX(self, data, address):
-        raise self.NotImplementedException()
+        return self.registers.x
 
     def STY(self, data, address):
-        raise self.NotImplementedException()
+        return self.registers.y
 
     def TAX(self, data, address):
         result = self.registers.a
@@ -286,4 +349,5 @@ class ExecutionDispatcher(object):
         return result
 
     def UNDEFINED(self, data, address):
+        pass
         raise self.NotImplementedException()

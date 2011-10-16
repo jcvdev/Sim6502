@@ -51,8 +51,8 @@ class AddressDispatcher(object):
         return self.memory.readWord(addr)
     
     def indirectY(self):
-        addr = self.memory.readByte(self.registers.pc + 1) + self.registers.y
-        return self.memory.readWord(addr)
+        addr = self.memory.readByte(self.registers.pc + 1)
+        return self.memory.readWord(addr) + self.registers.y
     
     def implicitRead(self):
         return None

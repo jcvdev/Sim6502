@@ -7,7 +7,7 @@ Created on 12 Oct 2011
 class RegisterBank(object):
     def __init__(self):
         self.pc = 0x0000
-        self.sp = 0x01ff
+        self.sp = 0xff
         self.a  = 0x00
         self.x  = 0x00
         self.y  = 0x00
@@ -38,9 +38,27 @@ class RegisterBank(object):
         self.brk = (value & 0x10) != 0
         self.overflow = (value & 0x20) != 0
         self.negative = (value & 0x40) != 0
+
+    def reset(self):
+        self.x = 0
+        self.a = 0
+        self.y = 0
+        self.pc = 0
+        self.nextPC = 0
+        self.sp = 0xff
+        self.setPS(0)
         
     def status(self):
-        print "A = %s X = %s Y = %s" % (hex(self.a), hex(self.x), hex(self.y))
-        print "PC = %s SP = %s" % (hex(self.pc), hex(self.sp))
-        print "C = %s Z = %s I = %s D = %s" % (self.carry, self.zero, self.int, self.dec)
-        print "B = %s V = %s N = %s" % (self.brk, self.overflow, self.negative)
+       
+       
+        print "%s%s.%s%s%s%s%s" % (
+                                   "N" if self.negative else "-",
+                                   "V" if self.overflow else "-",
+                                   "B" if self.brk else "-",
+                                   "D" if self.dec else "-",
+                                   "I" if self.int else "-",
+                                   "Z" if self.zero else "-",
+                                   "C" if self.carry else "-"),        
+        print "A: %s X: %s Y: %s" % (hex(self.a), hex(self.x), hex(self.y)),
+        print "PC: %s SP: %s" % (hex(self.pc), hex(self.sp))
+        
