@@ -54,8 +54,8 @@ class Test(unittest.TestCase):
         instr = 0
         
         while True:
-            if reg.pc == 0x8000:
-                verbose = True
+#            if reg.pc == 0x8000:
+#                verbose = True
             
             if pcTrace:
                 print "%s: PC: %s" % (instr, hex(reg.pc))

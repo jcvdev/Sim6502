@@ -17,6 +17,7 @@ class Beeb(object):
         self.cpu = cpu
         self.cpu.reset()
         self.setPagedROM(0)
+        self.cpu.memory.writeByte(0x028c, 15)
         
     def setPagedROM(self, pagedRom):
         self.pagedROM.setPagedROM(pagedRom)
