@@ -6,6 +6,7 @@ class PagedROM(object):
         self.index = 0
         
     def setPagedROM(self, index):
+        print "Paged ROM %s selected" % (index)
         self.index = index
         if index == 15:
             self.rom = ROM.rom_basic2

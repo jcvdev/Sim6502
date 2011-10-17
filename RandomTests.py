@@ -54,8 +54,8 @@ class Test(unittest.TestCase):
         instr = 0
         
         while True:
-            #if reg.pc == 0xf66a:
-            #    verbose = True
+            if reg.pc == 0x8000:
+                verbose = True
             
             if pcTrace:
                 print "%s: PC: %s" % (instr, hex(reg.pc))
@@ -63,8 +63,7 @@ class Test(unittest.TestCase):
 
             if not pcTrace and not verbose:
                 if reg.pc == OS_WRCH:
-                    if reg.a > 31:
-                        print chr(reg.a),
+                    print chr(reg.a),
                 elif reg.pc == OS_RDCH:
                     print "OS_RDCH"
             
