@@ -53,8 +53,8 @@ class Memory(object):
 
         mapped = [ (range[0], self.maps[range]) for range in self.maps if address>=range[0] and address<range[1] ]
         if len(mapped):
-            base = mapped[0][0]
-            mappedDevice = mapped[0][1]
+            base = mapped[-1][0]
+            mappedDevice = mapped[-1][1]
             mappedDevice.writeByte(address - base, value)
         else:
             self.memory[address] = value
