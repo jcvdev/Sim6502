@@ -23,8 +23,8 @@ class AddressDispatcher(object):
     
     def zeroPageY(self):
         offset = self.memory.readByte( self.registers.pc + 1)
-        addr = (self.registers.y + offset) & 0xff
-        return addr
+        addr = offset + self.registers.y
+        return addr & 0xff
     
     def relative(self):
         offset = self.memory.readSignedByte( self.registers.pc + 1)

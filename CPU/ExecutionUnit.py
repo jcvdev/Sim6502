@@ -65,8 +65,8 @@ class ExecutionDispatcher(object):
     def ASL(self, data, address):
         result = data << 1
         self.registers.carry = (result > 255)
-        #self.registers.zero = (result == 0)
-        #self.registers.negative = (result & 0x80) != 0
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
         return result & 0xff
 
     def BCC(self, data, address):
@@ -89,8 +89,8 @@ class ExecutionDispatcher(object):
 
     def BIT(self, data, address):
         result = self.registers.a & data
-        self.registers.negative = (result & 0x80) != 0
-        self.registers.overflow = (result & 0x40) != 0
+        self.registers.negative = (data & 0x80) != 0
+        self.registers.overflow = (data & 0x40) != 0
         self.registers.zero = (result == 0)
         return None
 
@@ -113,9 +113,9 @@ class ExecutionDispatcher(object):
             return None
 
     def BRK(self, data, address):
-        self.pushWord(self.registers.pc + 1)
-        self.pushByte(self.registers.ps())
         self.registers.brk = True
+        self.pushWord(self.registers.pc + 2)
+        self.pushByte(self.registers.ps())
         return self.memory.readWord(0xfffe)
         
     def BVC(self, data, address):
@@ -225,18 +225,18 @@ class ExecutionDispatcher(object):
     def LSR(self, data, address):
         self.registers.carry = (data & 0x01) != 0
         result = data >> 1
-        #self.registers.zero = (result == 0)
-        #self.registers.negative = (result & 0x80) != 0
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
         return result & 0xff
 
     def NOP(self, data, address):
-        raise self.NotImplementedException()
+        pass
 
     def ORA(self, data, address):
         result = data | self.registers.a
-        self.registers.zero = (data == 0)
-        self.registers.negative = (data & 0x80) != 0
-        return data
+        self.registers.zero = (result == 0)
+        self.registers.negative = (result & 0x80) != 0
+        return result
 
     def PHA(self, data, address):
         self.pushByte(self.registers.a)
@@ -255,6 +255,7 @@ class ExecutionDispatcher(object):
     def PLP(self, data, address):
         result = self.pullByte()
         self.registers.setPS(result)
+        return None
 
     def ROL(self, data, address):
         oldCarry = 0x01 if self.registers.carry else 0x00
@@ -296,7 +297,7 @@ class ExecutionDispatcher(object):
         return None
 
     def SED(self, data, address):
-        self.register.dec = True
+        self.registers.dec = True
         return None
 
     def SEI(self, data, address):
@@ -350,3 +351,4 @@ class ExecutionDispatcher(object):
 
     def UNDEFINED(self, data, address):
         pass
+#        raise self.NotImplementedException()

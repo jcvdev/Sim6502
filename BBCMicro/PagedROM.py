@@ -7,7 +7,7 @@ class PagedROM(object):
         
     def setPagedROM(self, index):
         self.index = index
-        if index == 0:
+        if index == 15:
             self.rom = ROM.rom_basic2
         else:
             self.rom = None

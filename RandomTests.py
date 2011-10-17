@@ -40,7 +40,7 @@ class Test(unittest.TestCase):
         
         pcTrace = False
         verbose = False
-
+        
         dispatch = None
         if verbose:
             dispatch = Dispatch.Dispatcher(decoder, addrDispatch, combinedExec, combinedWriteback, mem, reg)
@@ -54,13 +54,17 @@ class Test(unittest.TestCase):
         instr = 0
         
         while True:
+            #if reg.pc == 0xf66a:
+            #    verbose = True
+            
             if pcTrace:
                 print "%s: PC: %s" % (instr, hex(reg.pc))
             instr += 1
 
             if not pcTrace and not verbose:
                 if reg.pc == OS_WRCH:
-                    print chr(reg.a),
+                    if reg.a > 31:
+                        print chr(reg.a),
                 elif reg.pc == OS_RDCH:
                     print "OS_RDCH"
             

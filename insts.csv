@@ -96,7 +96,7 @@ hex,instr,addr,wb,len,tim
 5E,LSR,abx,M,3,7
 5F,,,,,
 60,RTS,imp,PC,1,6
-61,ADC,imx,A,2,6
+61,ADC,inx,A,2,6
 62,,,,,
 63,,,,,
 64,,,,,
@@ -160,7 +160,7 @@ hex,instr,addr,wb,len,tim
 9E,,,,,
 9F,,,,,
 A0,LDY,imm,Y,2,2
-A1,LDA,imx,A,2,6
+A1,LDA,inx,A,2,6
 A2,LDX,imm,X,2,2
 A3,,,,,
 A4,LDY,zp,Y,2,3

@@ -27,8 +27,8 @@ class RegisterBank(object):
                  (4 if self.int else 0) |
                  (8 if self.dec else 0) |
                  (16 if self.brk else 0) |
-                 (32 if self.overflow else 0) |
-                 (64 if self.negative else 0) )
+                 (64 if self.overflow else 0) |
+                 (128 if self.negative else 0) )
         
     def setPS(self, value):
         self.carry = (value & 0x1) != 0
@@ -36,8 +36,8 @@ class RegisterBank(object):
         self.int = (value & 0x4) != 0
         self.dec = (value & 0x8) != 0
         self.brk = (value & 0x10) != 0
-        self.overflow = (value & 0x20) != 0
-        self.negative = (value & 0x40) != 0
+        self.overflow = (value & 0x40) != 0
+        self.negative = (value & 0x80) != 0
 
     def reset(self):
         self.x = 0
