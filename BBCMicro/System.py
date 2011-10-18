@@ -9,13 +9,13 @@ import Sheila
 
 class Beeb(object):
     def __init__(self, cpu):
-        self.os = OS.BBCMemoryMap(self)
+        self.os = OS.MOS()
         self.pagedROM = PagedROM.PagedROM()
-        self.sheila = Sheila.Sheila()
+        self.sheila = Sheila.Sheila(self)
         
-        cpu.memory.map( (0xc000, 0xffff), self.os)
-        cpu.memory.map( (0x8000, 0xbfff), self.pagedROM)
-        cpu.memory.map( (0xfe00, 0xfeff), self.sheila)
+        cpu.memory.map( (OS.BASE, OS.TOP), self.os)
+        cpu.memory.map( (PagedROM.BASE, PagedROM.TOP), self.pagedROM)
+        cpu.memory.map( (Sheila.BASE, Sheila.TOP), self.sheila)
 
         self.cpu = cpu
         self.cpu.reset()

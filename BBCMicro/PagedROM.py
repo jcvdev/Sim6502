@@ -1,5 +1,8 @@
 import ROM
 
+BASE = 0x8000
+TOP = 0xbfff
+
 class PagedROM(object):
     def __init__(self):
         self.rom = None
