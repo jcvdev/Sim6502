@@ -7,7 +7,7 @@ by hooking the `OS_WRCH` syscall and printing the contents of the A register
 to `stdout`. The emulator will essentially hang when it gets to an `OS_RDCH`
 as it's waiting for a keypress that will never come.
 
-To run the emulator, run `python PyBeeb.js`.
+To run the emulator, run `python PyBeeb.py`.
 
 I've tested it with Python 2.7; it won't work with Python 3, I'm afraid.
 
