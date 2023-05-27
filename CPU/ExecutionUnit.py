@@ -53,7 +53,7 @@ class ExecutionDispatcher(object):
         result = self.registers.a + data + (1 if self.registers.carry else 0)
         self.registers.negative = (result & 0x80) != 0 
         self.registers.carry = (result > 255)
-        self.registers.zero = (result == 0)
+        self.registers.zero = ((result & 0xff) == 0)
         return result & 0xff
 
     def AND(self, data, address):
