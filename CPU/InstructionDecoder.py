@@ -1,32 +1,275 @@
-class Decoder(object):
-    def __init__(self, decodeFilename):
-        decodeFile = open(decodeFilename)
-        self.loadDecodeTable(decodeFile)
-        
-    def loadDecodeTable(self, decodeFile):
-        self.decodeTable = {}
-        for entry in decodeFile:
-            (opcode, instr, addr, wb, byteLen, time) = entry.split(",")
-            try:
-                if instr != "":
-                    self.decodeTable[int(opcode,16)] = (instr, addr, wb, int(byteLen), int(time))
-                else:
-                    self.decodeTable[int(opcode,16)] = ("UNDEFINED", "imp", "NW", 1, 1)
-            except ValueError:
-                pass
-            
+class Decoder:
+
+    decodeTable = [
+        ("BRK", "imp", "PC", 1, 7),  # 00
+        ("ORA", "inx", "A", 2, 6),  # 01
+        ("UNK", "imp", "NW", 1, 1),  # 02
+        ("UNK", "imp", "NW", 1, 1),  # 03
+        ("UNK", "imp", "NW", 1, 1),  # 04
+        ("ORA", "zp", "A", 2, 3),  # 05
+        ("ASL", "zp", "M", 2, 5),  # 06
+        ("UNK", "imp", "NW", 1, 1),  # 07
+        ("PHP", "imp", "SP", 1, 3),  # 08
+        ("ORA", "imm", "A", 2, 2),  # 09
+        ("ASL", "acc", "A", 1, 2),  # 0A
+        ("UNK", "imp", "NW", 1, 1),  # 0B
+        ("UNK", "imp", "NW", 1, 1),  # 0C
+        ("ORA", "abs", "A", 3, 4),  # 0D
+        ("ASL", "abs", "M", 3, 6),  # 0E
+        ("UNK", "imp", "NW", 1, 1),  # 0F
+        ("BPL", "rel", "PC", 2, 2),  # 10
+        ("ORA", "iny", "A", 2, 5),  # 11
+        ("UNK", "imp", "NW", 1, 1),  # 12
+        ("UNK", "imp", "NW", 1, 1),  # 13
+        ("UNK", "imp", "NW", 1, 1),  # 14
+        ("ORA", "zpx", "A", 2, 4),  # 15
+        ("ASL", "zpx", "M", 2, 6),  # 16
+        ("UNK", "imp", "NW", 1, 1),  # 17
+        ("CLC", "imp", "NW", 1, 2),  # 18
+        ("ORA", "aby", "A", 3, 4),  # 19
+        ("UNK", "imp", "NW", 1, 1),  # 1A
+        ("UNK", "imp", "NW", 1, 1),  # 1B
+        ("UNK", "imp", "NW", 1, 1),  # 1C
+        ("ORA", "abx", "A", 3, 4),  # 1D
+        ("ASL", "abx", "M", 3, 7),  # 1E
+        ("UNK", "imp", "NW", 1, 1),  # 1F
+        ("JSR", "abs", "PC", 3, 6),  # 20
+        ("AND", "inx", "A", 2, 6),  # 21
+        ("UNK", "imp", "NW", 1, 1),  # 22
+        ("UNK", "imp", "NW", 1, 1),  # 23
+        ("BIT", "zp", "NW", 2, 3),  # 24
+        ("AND", "zp", "A", 2, 3),  # 25
+        ("ROL", "zp", "M", 2, 5),  # 26
+        ("UNK", "imp", "NW", 1, 1),  # 27
+        ("PLP", "imp", "PS", 1, 4),  # 28
+        ("AND", "imm", "A", 2, 2),  # 29
+        ("ROL", "acc", "A", 1, 2),  # 2A
+        ("UNK", "imp", "NW", 1, 1),  # 2B
+        ("BIT", "abs", "NW", 3, 4),  # 2C
+        ("AND", "abs", "A", 3, 4),  # 2D
+        ("ROL", "abs", "M", 3, 6),  # 2E
+        ("UNK", "imp", "NW", 1, 1),  # 2F
+        ("BMI", "rel", "PC", 2, 2),  # 30
+        ("AND", "iny", "A", 2, 5),  # 31
+        ("UNK", "imp", "NW", 1, 1),  # 32
+        ("UNK", "imp", "NW", 1, 1),  # 33
+        ("UNK", "imp", "NW", 1, 1),  # 34
+        ("AND", "zpx", "A", 2, 4),  # 35
+        ("ROL", "zpx", "M", 2, 6),  # 36
+        ("UNK", "imp", "NW", 1, 1),  # 37
+        ("SEC", "imp", "NW", 1, 2),  # 38
+        ("AND", "aby", "A", 3, 4),  # 39
+        ("UNK", "imp", "NW", 1, 1),  # 3A
+        ("UNK", "imp", "NW", 1, 1),  # 3B
+        ("UNK", "imp", "NW", 1, 1),  # 3C
+        ("AND", "abx", "A", 3, 4),  # 3D
+        ("ROL", "abx", "M", 3, 7),  # 3E
+        ("UNK", "imp", "NW", 1, 1),  # 3F
+        ("RTI", "imp", "PC", 1, 6),  # 40
+        ("EOR", "inx", "A", 2, 6),  # 41
+        ("UNK", "imp", "NW", 1, 1),  # 42
+        ("UNK", "imp", "NW", 1, 1),  # 43
+        ("UNK", "imp", "NW", 1, 1),  # 44
+        ("EOR", "zp", "A", 2, 3),  # 45
+        ("LSR", "zp", "M", 2, 5),  # 46
+        ("UNK", "imp", "NW", 1, 1),  # 47
+        ("PHA", "imp", "SP", 1, 3),  # 48
+        ("EOR", "imm", "A", 2, 2),  # 49
+        ("LSR", "acc", "A", 1, 2),  # 4A
+        ("UNK", "imp", "NW", 1, 1),  # 4B
+        ("JMP", "abs", "PC", 3, 3),  # 4C
+        ("EOR", "abs", "A", 3, 4),  # 4D
+        ("LSR", "abs", "M", 3, 6),  # 4E
+        ("UNK", "imp", "NW", 1, 1),  # 4F
+        ("BVC", "rel", "PC", 2, 2),  # 50
+        ("EOR", "iny", "A", 2, 5),  # 51
+        ("UNK", "imp", "NW", 1, 1),  # 52
+        ("UNK", "imp", "NW", 1, 1),  # 53
+        ("UNK", "imp", "NW", 1, 1),  # 54
+        ("EOR", "zpx", "A", 2, 4),  # 55
+        ("LSR", "zpx", "M", 2, 6),  # 56
+        ("UNK", "imp", "NW", 1, 1),  # 57
+        ("CLI", "imp", "NW", 1, 2),  # 58
+        ("EOR", "aby", "A", 3, 4),  # 59
+        ("UNK", "imp", "NW", 1, 1),  # 5A
+        ("UNK", "imp", "NW", 1, 1),  # 5B
+        ("UNK", "imp", "NW", 1, 1),  # 5C
+        ("EOR", "abx", "A", 3, 4),  # 5D
+        ("LSR", "abx", "M", 3, 7),  # 5E
+        ("UNK", "imp", "NW", 1, 1),  # 5F
+        ("RTS", "imp", "PC", 1, 6),  # 60
+        ("ADC", "inx", "A", 2, 6),  # 61
+        ("UNK", "imp", "NW", 1, 1),  # 62
+        ("UNK", "imp", "NW", 1, 1),  # 63
+        ("UNK", "imp", "NW", 1, 1),  # 64
+        ("ADC", "zp", "A", 2, 3),  # 65
+        ("ROR", "zp", "M", 2, 5),  # 66
+        ("UNK", "imp", "NW", 1, 1),  # 67
+        ("PLA", "imp", "A", 1, 4),  # 68
+        ("ADC", "imm", "A", 2, 2),  # 69
+        ("ROR", "acc", "A", 1, 2),  # 6A
+        ("UNK", "imp", "NW", 1, 1),  # 6B
+        ("JMP", "ind", "PC", 3, 5),  # 6C
+        ("ADC", "abs", "A", 3, 4),  # 6D
+        ("ROR", "abs", "M", 3, 6),  # 6E
+        ("UNK", "imp", "NW", 1, 1),  # 6F
+        ("BVS", "rel", "PC", 2, 2),  # 70
+        ("ADC", "imy", "A", 2, 5),  # 71
+        ("UNK", "imp", "NW", 1, 1),  # 72
+        ("UNK", "imp", "NW", 1, 1),  # 73
+        ("UNK", "imp", "NW", 1, 1),  # 74
+        ("ADC", "zpx", "A", 2, 4),  # 75
+        ("ROR", "zpx", "M", 2, 6),  # 76
+        ("UNK", "imp", "NW", 1, 1),  # 77
+        ("SEI", "imp", "NW", 1, 2),  # 78
+        ("ADC", "aby", "A", 3, 4),  # 79
+        ("UNK", "imp", "NW", 1, 1),  # 7A
+        ("UNK", "imp", "NW", 1, 1),  # 7B
+        ("UNK", "imp", "NW", 1, 1),  # 7C
+        ("ADC", "abx", "A", 3, 4),  # 7D
+        ("ROR", "abx", "M", 3, 7),  # 7E
+        ("UNK", "imp", "NW", 1, 1),  # 7F
+        ("UNK", "imp", "NW", 1, 1),  # 80
+        ("STA", "inx", "W", 2, 6),  # 81
+        ("UNK", "imp", "NW", 1, 1),  # 82
+        ("UNK", "imp", "NW", 1, 1),  # 83
+        ("STY", "zp", "M", 2, 3),  # 84
+        ("STA", "zp", "W", 2, 3),  # 85
+        ("STX", "zp", "M", 2, 3),  # 86
+        ("UNK", "imp", "NW", 1, 1),  # 87
+        ("DEY", "imp", "Y", 1, 2),  # 88
+        ("UNK", "imp", "NW", 1, 1),  # 89
+        ("TXA", "imp", "A", 1, 2),  # 8A
+        ("UNK", "imp", "NW", 1, 1),  # 8B
+        ("STY", "abs", "M", 3, 4),  # 8C
+        ("STA", "abs", "W", 3, 4),  # 8D
+        ("STX", "abs", "M", 3, 4),  # 8E
+        ("UNK", "imp", "NW", 1, 1),  # 8F
+        ("BCC", "rel", "PC", 2, 2),  # 90
+        ("STA", "iny", "W", 2, 6),  # 91
+        ("UNK", "imp", "NW", 1, 1),  # 92
+        ("UNK", "imp", "NW", 1, 1),  # 93
+        ("STY", "zpx", "M", 2, 3),  # 94
+        ("STA", "zpx", "W", 2, 4),  # 95
+        ("STX", "zpy", "M", 2, 4),  # 96
+        ("UNK", "imp", "NW", 1, 1),  # 97
+        ("TYA", "imp", "A", 1, 2),  # 98
+        ("STA", "aby", "W", 3, 5),  # 99
+        ("TXS", "imp", "SP", 1, 2),  # 9A
+        ("UNK", "imp", "NW", 1, 1),  # 9B
+        ("UNK", "imp", "NW", 1, 1),  # 9C
+        ("STA", "abx", "W", 3, 5),  # 9D
+        ("UNK", "imp", "NW", 1, 1),  # 9E
+        ("UNK", "imp", "NW", 1, 1),  # 9F
+        ("LDY", "imm", "Y", 2, 2),  # A0
+        ("LDA", "inx", "A", 2, 6),  # A1
+        ("LDX", "imm", "X", 2, 2),  # A2
+        ("UNK", "imp", "NW", 1, 1),  # A3
+        ("LDY", "zp", "Y", 2, 3),  # A4
+        ("LDA", "zp", "A", 2, 3),  # A5
+        ("LDX", "zp", "X", 2, 3),  # A6
+        ("UNK", "imp", "NW", 1, 1),  # A7
+        ("TAY", "imp", "Y", 1, 2),  # A8
+        ("LDA", "imm", "A", 2, 2),  # A9
+        ("TAX", "imp", "X", 1, 2),  # AA
+        ("UNK", "imp", "NW", 1, 1),  # AB
+        ("LDY", "abs", "Y", 3, 4),  # AC
+        ("LDA", "abs", "A", 3, 4),  # AD
+        ("LDX", "abs", "X", 3, 4),  # AE
+        ("UNK", "imp", "NW", 1, 1),  # AF
+        ("BCS", "rel", "PC", 2, 2),  # B0
+        ("LDA", "iny", "A", 2, 5),  # B1
+        ("UNK", "imp", "NW", 1, 1),  # B2
+        ("UNK", "imp", "NW", 1, 1),  # B3
+        ("LDY", "zpx", "Y", 2, 4),  # B4
+        ("LDA", "zpx", "A", 2, 4),  # B5
+        ("LDX", "zpy", "X", 2, 4),  # B6
+        ("UNK", "imp", "NW", 1, 1),  # B7
+        ("CLV", "imp", "NW", 1, 2),  # B8
+        ("LDA", "aby", "A", 3, 4),  # B9
+        ("TSX", "imp", "X", 1, 2),  # BA
+        ("UNK", "imp", "NW", 1, 1),  # BB
+        ("LDY", "abx", "Y", 3, 4),  # BC
+        ("LDA", "abx", "A", 3, 4),  # BD
+        ("LDX", "aby", "X", 3, 4),  # BE
+        ("UNK", "imp", "NW", 1, 1),  # BF
+        ("CPY", "imm", "NW", 2, 2),  # C0
+        ("CMP", "inx", "NW", 2, 6),  # C1
+        ("UNK", "imp", "NW", 1, 1),  # C2
+        ("UNK", "imp", "NW", 1, 1),  # C3
+        ("CPY", "zp", "NW", 2, 3),  # C4
+        ("CMP", "zp", "NW", 2, 3),  # C5
+        ("DEC", "zp", "M", 2, 5),  # C6
+        ("UNK", "imp", "NW", 1, 1),  # C7
+        ("INY", "imp", "Y", 1, 2),  # C8
+        ("CMP", "imm", "NW", 2, 3),  # C9
+        ("DEX", "imp", "X", 1, 2),  # CA
+        ("UNK", "imp", "NW", 1, 1),  # CB
+        ("CPY", "abs", "NW", 3, 4),  # CC
+        ("CMP", "abs", "NW", 3, 4),  # CD
+        ("DEC", "abs", "M", 3, 6),  # CE
+        ("UNK", "imp", "NW", 1, 1),  # CF
+        ("BNE", "rel", "PC", 2, 2),  # D0
+        ("CMP", "iny", "NW", 2, 5),  # D1
+        ("UNK", "imp", "NW", 1, 1),  # D2
+        ("UNK", "imp", "NW", 1, 1),  # D3
+        ("UNK", "imp", "NW", 1, 1),  # D4
+        ("CMP", "zpx", "NW", 2, 4),  # D5
+        ("DEC", "zpx", "M", 2, 6),  # D6
+        ("UNK", "imp", "NW", 1, 1),  # D7
+        ("CLD", "imp", "NW", 1, 2),  # D8
+        ("CMP", "aby", "NW", 3, 4),  # D9
+        ("UNK", "imp", "NW", 1, 1),  # DA
+        ("UNK", "imp", "NW", 1, 1),  # DB
+        ("UNK", "imp", "NW", 1, 1),  # DC
+        ("CMP", "abx", "NW", 3, 4),  # DD
+        ("DEC", "abx", "M", 3, 7),  # DE
+        ("UNK", "imp", "NW", 1, 1),  # DF
+        ("CPX", "imm", "NW", 2, 2),  # E0
+        ("SBC", "inx", "A", 2, 6),  # E1
+        ("UNK", "imp", "NW", 1, 1),  # E2
+        ("UNK", "imp", "NW", 1, 1),  # E3
+        ("CPX", "zp", "NW", 2, 3),  # E4
+        ("SBC", "zp", "A", 2, 3),  # E5
+        ("INC", "zp", "M", 2, 5),  # E6
+        ("UNK", "imp", "NW", 1, 1),  # E7
+        ("INX", "imp", "X", 1, 2),  # E8
+        ("SBC", "imm", "A", 2, 2),  # E9
+        ("NOP", "imp", "NW", 1, 2),  # EA
+        ("UNK", "imp", "NW", 1, 1),  # EB
+        ("CPX", "abs", "NW", 3, 4),  # EC
+        ("SBC", "abs", "A", 3, 4),  # ED
+        ("INC", "abs", "M", 3, 6),  # EE
+        ("UNK", "imp", "NW", 1, 1),  # EF
+        ("BEQ", "rel", "PC", 2, 2),  # F0
+        ("SBC", "iny", "A", 2, 5),  # F1
+        ("UNK", "imp", "NW", 1, 1),  # F2
+        ("UNK", "imp", "NW", 1, 1),  # F3
+        ("UNK", "imp", "NW", 1, 1),  # F4
+        ("SBC", "zpx", "A", 2, 4),  # F5
+        ("INC", "zpx", "M", 2, 6),  # F6
+        ("UNK", "imp", "NW", 1, 1),  # F7
+        ("SED", "imp", "NW", 1, 2),  # F8
+        ("SBC", "aby", "A", 3, 4),  # F9
+        ("UNK", "imp", "NW", 1, 1),  # FA
+        ("UNK", "imp", "NW", 1, 1),  # FB
+        ("UNK", "imp", "NW", 1, 1),  # FC
+        ("SBC", "abx", "A", 3, 4),  # FD
+        ("INC", "abx", "M", 3, 7),  # FE
+        ("UNK", "imp", "NW", 1, 1),  # FF
+    ]
+
     def instruction(self, opcode):
-        return self.decodeTable[opcode][0]
-    
+        return Decoder.decodeTable[opcode][0]
+
     def addressingMode(self, opcode):
-        return self.decodeTable[opcode][1]
-    
+        return Decoder.decodeTable[opcode][1]
+
     def writeback(self, opcode):
-        return self.decodeTable[opcode][2]
-    
+        return Decoder.decodeTable[opcode][2]
+
     def instructionLength(self, opcode):
-        return self.decodeTable[opcode][3]
-    
+        return Decoder.decodeTable[opcode][3]
+
     def clockCycles(self, opcode):
-        ''' This will, in general, be wrong '''
-        return self.decodeTable[opcode][4] 
+        return Decoder.decodeTable[opcode][4]

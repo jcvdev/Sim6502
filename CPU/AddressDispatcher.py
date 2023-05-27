@@ -1,95 +1,116 @@
+class AddressDispatcher:
 
-class AddressDispatcher(object):
-    def __init__(self, memory, registerBank):
+    def __init__(self, mmu, registerBank):
         self.registers = registerBank
-        self.memory = memory
-    
+        self.mmu = mmu
+        self.disassembleString = None
+
     def implicit(self):
+        self.disassembleString = None
         return None
-    
+
     def accumulator(self):
+        self.disassembleString = None
         return None
-    
+
     def immediate(self):
-        return self.registers.pc + 1
-    
+        addr = self.registers.pc + 1
+        self.disassembleString = "#$%02x" % (self.mmu.readByte(addr))
+        return addr
+
     def zeroPage(self):
-        return self.memory.readByte( self.registers.pc + 1)
-    
+        addr = self.mmu.readByte(self.registers.pc + 1)
+        self.disassembleString = "$%02x" % (addr)
+        return addr
+
     def zeroPageX(self):
-        offset = self.memory.readByte( self.registers.pc + 1)
-        addr = offset + self.registers.x
-        return addr & 0xff
-    
+        base = self.mmu.readByte(self.registers.pc + 1)
+        addr = base + self.registers.x
+        self.disassembleString = "($%02x,x)" % (base)
+        return addr & 0xffff
+
     def zeroPageY(self):
-        offset = self.memory.readByte( self.registers.pc + 1)
-        addr = offset + self.registers.y
-        return addr & 0xff
-    
+        base = self.mmu.readByte(self.registers.pc + 1)
+        addr = base + self.registers.y
+        self.disassembleString = "($%02x),y" % (base)
+        return addr & 0xffff
+
     def relative(self):
-        offset = self.memory.readSignedByte( self.registers.pc + 1)
-        return offset + self.registers.nextPC
-    
+        byte = self.mmu.readByte(self.registers.pc + 1)
+        offset = byte if byte < 128 else byte - 256
+        addr = offset + self.registers.nextPC
+        self.disassembleString = "$%04x" % (addr)
+        return addr
+
     def absolute(self):
-        return self.memory.readWord(self.registers.pc + 1)
-    
+        addr = self.mmu.readWord(self.registers.pc + 1)
+        self.disassembleString = "$%04x" % (addr)
+        return addr
+
     def absoluteX(self):
-        offset = self.memory.readWord(self.registers.pc + 1)
-        return self.registers.x + offset
-    
+        base = self.mmu.readWord(self.registers.pc + 1)
+        addr = base + self.registers.x
+        self.disassembleString = "$%04x,x" % (addr)
+        return addr & 0xffff
+
     def absoluteY(self):
-        offset = self.memory.readWord(self.registers.pc + 1)
-        return self.registers.y + offset
-        
+        base = self.mmu.readWord(self.registers.pc + 1)
+        addr = base + self.registers.y
+        self.disassembleString = "$%04x,y" % (addr)
+        return addr & 0xffff
+
     def indirect(self):
-        addr = self.memory.readWord(self.registers.pc + 1)
-        return self.memory.readWord(addr)
-    
+        addr = self.mmu.readWord(self.mmu.readWord(self.registers.pc + 1))
+        self.disassembleString = "($%04x)" % (addr)
+        return addr & 0xffff
+
     def indirectX(self):
-        addr = self.memory.readByte(self.registers.pc + 1) + self.registers.x
-        addr = addr & 0xff
-        return self.memory.readWord(addr)
-    
+        base = self.mmu.readByte(self.registers.pc + 1)
+        addr = self.mmu.readWord((base + self.registers.x) & 0xff)
+        self.disassembleString = "($%04x,x)" % (base)
+        return addr & 0xffff
+
     def indirectY(self):
-        addr = self.memory.readByte(self.registers.pc + 1)
-        return self.memory.readWord(addr) + self.registers.y
-    
+        base = self.mmu.readByte(self.registers.pc + 1)
+        addr = self.mmu.readWord(base) + self.registers.y
+        self.disassembleString = "($%02x),y" % (base)
+        return addr
+
     def implicitRead(self):
         return None
-    
+
     def accumulatorRead(self):
         return self.registers.a
-    
+
     def immediateRead(self):
-        return self.memory.readByte(self.immediate())
-    
+        return self.mmu.readByte(self.immediate())
+
     def zeroPageRead(self):
-        return self.memory.readByte(self.zeroPage())
-    
+        return self.mmu.readByte(self.zeroPage())
+
     def zeroPageXRead(self):
-        return self.memory.readByte(self.zeroPageX())
-    
+        return self.mmu.readByte(self.zeroPageX())
+
     def zeroPageYRead(self):
-        return self.memory.readByte(self.zeroPageY())
-    
+        return self.mmu.readByte(self.zeroPageY())
+
     def relativeRead(self):
-        return self.memory.readByte(self.relative()) # hack hack hack
-    
+        return self.mmu.readByte(self.relative())  # hack hack hack
+
     def absoluteRead(self):
-        return self.memory.readByte(self.absolute())
-    
+        return self.mmu.readByte(self.absolute())
+
     def absoluteXRead(self):
-        return self.memory.readByte(self.absoluteX())
-    
+        return self.mmu.readByte(self.absoluteX())
+
     def absoluteYRead(self):
-        return self.memory.readByte(self.absoluteY())
-        
+        return self.mmu.readByte(self.absoluteY())
+
     def indirectRead(self):
-        return self.memory.readByte(self.indirect())
-    
+        return self.mmu.readByte(self.indirect())
+
     def indirectXRead(self):
-        return self.memory.readByte(self.indirectX())
-    
+        return self.mmu.readByte(self.indirectX())
+
     def indirectYRead(self):
-        return self.memory.readByte(self.indirectY())
-    
+        return self.mmu.readByte(self.indirectY())

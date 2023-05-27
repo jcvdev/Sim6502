@@ -1,57 +1,59 @@
-'''
-Created on 13 Oct 2011
+import sys
 
-@author: chris.whitworth
-'''
 
 class StackOverflowException(BaseException):
     pass
+
+
 class StackUnderflowException(BaseException):
     pass
 
-class ExecutionDispatcher(object):
+
+class ExecutionDispatcher:
+
     class NotImplementedException(BaseException):
+
         def __init__(self):
             self.instr = ""
-            
+
         def __repr__(self):
             "%s is not implemented"
-            
-    def __init__(self, memory, registers):
-        self.memory = memory
+
+    def __init__(self, mmu, registers):
+        self.mmu = mmu
         self.registers = registers
-    
+
     def pushByte(self, value):
-        self.memory.writeByte(self.registers.sp + 0x100, value)
+        self.mmu.writeByte(self.registers.sp + 0x100, value)
         self.registers.sp -= 1
         if self.registers.sp < 0x00:
             raise StackOverflowException()
-        
+
     def pullByte(self):
         self.registers.sp += 1
         if self.registers.sp > 0xff:
             raise StackUnderflowException()
-        
-        return self.memory.readByte(self.registers.sp + 0x100)
-    
+
+        return self.mmu.readByte(self.registers.sp + 0x100)
+
     def pushWord(self, value):
-        self.pushByte( value >> 8)
-        self.pushByte( value & 0xff )
+        self.pushByte(value >> 8)
+        self.pushByte(value & 0xff)
 
     def pullWord(self):
         lw = self.pullByte()
         hw = self.pullByte() << 8
         return lw + hw
-    
+
     def doCompare(self, mem, reg):
         result = reg - mem
         self.registers.negative = (result < 0 or result > 127)
         self.registers.zero = (result == 0)
         self.registers.carry = (result >= 0)
-    
+
     def ADC(self, data, address):
         result = self.registers.a + data + (1 if self.registers.carry else 0)
-        self.registers.negative = (result & 0x80) != 0 
+        self.registers.negative = (result & 0x80) != 0
         self.registers.carry = (result > 255)
         self.registers.zero = ((result & 0xff) == 0)
         return result & 0xff
@@ -65,7 +67,7 @@ class ExecutionDispatcher(object):
     def ASL(self, data, address):
         result = data << 1
         self.registers.carry = (result > 255)
-        self.registers.zero = (result == 0)
+        self.registers.zero = ((result & 0xff) == 0)
         self.registers.negative = (result & 0x80) != 0
         return result & 0xff
 
@@ -116,8 +118,8 @@ class ExecutionDispatcher(object):
         self.registers.brk = True
         self.pushWord(self.registers.pc + 2)
         self.pushByte(self.registers.ps())
-        return self.memory.readWord(0xfffe)
-        
+        return self.mmu.readWord(0xfffe)
+
     def BVC(self, data, address):
         if not self.registers.overflow:
             return address
@@ -278,7 +280,6 @@ class ExecutionDispatcher(object):
         self.registers.setPS(self.pullByte())
         self.registers.brk = False
         return self.pullWord()
-        
 
     def RTS(self, data, address):
         location = self.pullWord()
@@ -287,7 +288,7 @@ class ExecutionDispatcher(object):
     def SBC(self, data, address):
         result = (~data) & 0xff
         result += self.registers.a + (1 if self.registers.carry else 0)
-        self.registers.zero = (result == 0)
+        self.registers.zero = ((result & 0xff) == 0)
         self.registers.negative = (result & 0x80) != 0
         self.registers.carry = (result > 255)
         return result & 0xff
@@ -351,4 +352,6 @@ class ExecutionDispatcher(object):
 
     def UNDEFINED(self, data, address):
         pass
+
+
 #        raise self.NotImplementedException()
